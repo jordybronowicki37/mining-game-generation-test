@@ -54,9 +54,11 @@ public class MapGenerator
 
     private void GenerateBase(int height, int width, Position position, BaseType type)
     {
-        for (var i = 0; i < height; i++)
+        // Note the position indicates the center of the base,
+        // but it prefers the top-left corner if the height and/or width are even numbers
+        for (var i = - height/2; i < height-height/2; i++)
         {
-            for (var j = 0; j < width; j++)
+            for (var j = -width/2; j < width-width/2; j++)
             {
                 Grid[position.Y + i][position.X + j] = new BaseTile
                 {
@@ -287,6 +289,7 @@ public class MapGenerator
     public void GenerateOres()
     {
         var random = new Random(Seed);
+        
         
     }
 }

@@ -24,11 +24,11 @@ namespace MiningGameMapGenerationTest
             {
                 Width = 50,
                 Height = 50,
-                MainRoom = new Position(24, 24),
-                RedBase = new Position(1, 1),
-                YellowBase = new Position(46, 1),
-                GreenBase = new Position(1, 46),
-                BlueBase = new Position(46, 46),
+                MainRoom = new Position(25, 25),
+                RedBase = new Position(2, 2),
+                YellowBase = new Position(47, 2),
+                GreenBase = new Position(2, 47),
+                BlueBase = new Position(47, 47),
             };
             mapGenerator.GenerateAll();
 
