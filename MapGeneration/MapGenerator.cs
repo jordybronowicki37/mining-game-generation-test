@@ -115,6 +115,7 @@ public class MapGenerator
         
         var currentDirection = availableDirections[random.Next(availableDirections.Count)];
         var currentPosition = new Position(origin.X + 1, origin.Y + 1);
+        var justTurned = true;
         
         // Create paths
         for (var i = 0; i < random.Next(Height, Height * 2); i++)
@@ -149,27 +150,49 @@ public class MapGenerator
             };
             possibleDirections.Remove(oppositeDirection);
 
+            var newDirection = currentDirection;
             switch (possibleDirections.Count)
             {
                 case 1:
-                    currentDirection = possibleDirections[0];
+                    newDirection = possibleDirections[0];
                     break;
                 case 2 when possibleDirections.Contains(preferredDirection):
                     possibleDirections.Remove(preferredDirection);
-                    currentDirection = selectedPercentage < 80 ? preferredDirection : possibleDirections[0];
+                    newDirection = selectedPercentage < 80 ? preferredDirection : possibleDirections[0];
                     break;
                 case 2:
-                    currentDirection = selectedPercentage < 50 ? possibleDirections[0] : possibleDirections[1];
+                    newDirection = selectedPercentage < 50 ? possibleDirections[0] : possibleDirections[1];
                     break;
                 case 3 when possibleDirections.Contains(preferredDirection):
                     possibleDirections.Remove(preferredDirection);
                     possibleDirections.Remove(currentDirection);
-                    currentDirection = selectedPercentage < 20 ? preferredDirection : selectedPercentage < 90 ? currentDirection : possibleDirections[0];
+                    newDirection = selectedPercentage < 20 ? preferredDirection : selectedPercentage < 90 ? currentDirection : possibleDirections[0];
                     break;
                 case 3:
                     possibleDirections.Remove(currentDirection);
-                    currentDirection = selectedPercentage < 80 ? currentDirection : selectedPercentage < 90 ? possibleDirections[0] : possibleDirections[1];
+                    newDirection = selectedPercentage < 80 ? currentDirection : selectedPercentage < 90 ? possibleDirections[0] : possibleDirections[1];
                     break;
+            }
+
+            // Do not turn if the path just turned
+            if (justTurned)
+            {
+                var canStayStraight = currentDirection switch
+                {
+                    Direction.North => canGoNorth,
+                    Direction.East => canGoEast,
+                    Direction.South => canGoSouth,
+                    Direction.West => canGoWest,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                if (!canStayStraight) currentDirection = newDirection;
+                justTurned = false;
+            }
+            else if (currentDirection != newDirection)
+            {
+                currentDirection = newDirection;
+                justTurned = true;
             }
 
             // Move position
@@ -187,6 +210,8 @@ public class MapGenerator
                 case Direction.West:
                     currentPosition.X -= 1;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             // Add path tile and add tracks
