@@ -288,8 +288,42 @@ public class MapGenerator
     
     public void GenerateOres()
     {
+        const int percentChanceToSpawnOre = 10;
         var random = new Random(Seed);
-        
-        
+        var allOres = new [] { OreType.Coal, OreType.Copper, OreType.Iron, OreType.Gold, OreType.Uranium };
+        var allBases = new[] { RedBase, YellowBase, GreenBase, BlueBase, MainRoom };
+        var sizeOfScale = 100 / allBases.Length;
+        var selectedTilesForOres = new List<(DirtTile, int)>();
+
+        for (var y = 0; y < Height; y++)
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                var tile = Grid[y][x];
+                if (tile is not DirtTile dirtTile) continue;
+
+                if (random.Next(100) >= percentChanceToSpawnOre) continue;
+
+                var distanceToNearestBase = Height > Width ? Height : Width;
+
+                foreach (var basePosition in allBases)
+                {
+                    var distance = 0;
+                    distance += Math.Abs(basePosition.X - x);
+                    distance += Math.Abs(basePosition.Y - y);
+                    if (distance < distanceToNearestBase) distanceToNearestBase = distance;
+                }
+                
+                selectedTilesForOres.Add((dirtTile, distanceToNearestBase));
+            }
+        }
+
+        var maxDistance = selectedTilesForOres.Select(v => v.Item2).Max();
+        foreach (var (dirtTile, minDistance) in selectedTilesForOres)
+        {
+            var percentageFromMaxDistanceScale = (float)minDistance / maxDistance * 100f;
+            var reachedScales = (int)Math.Floor(percentageFromMaxDistanceScale / sizeOfScale);
+            dirtTile.OreType = allOres[random.Next(reachedScales < allOres.Length ? reachedScales+1 : reachedScales)];
+        }
     }
 }

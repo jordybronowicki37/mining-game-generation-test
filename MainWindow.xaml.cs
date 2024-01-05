@@ -10,7 +10,7 @@ namespace MiningGameMapGenerationTest
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
@@ -55,7 +55,6 @@ namespace MiningGameMapGenerationTest
                     var cellWrapper = new Grid();
                     var cell = new Rectangle
                     {
-                        Fill = new SolidColorBrush(Colors.Black),
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Stretch
                     };
@@ -110,7 +109,6 @@ namespace MiningGameMapGenerationTest
                                 };
                                 cellWrapper.Children.Add(trackText);
                             }
-                            
                             break;
                         case BaseTile baseTile:
                             cell.Fill = baseTile.BaseType switch
@@ -121,6 +119,17 @@ namespace MiningGameMapGenerationTest
                                 BaseType.Green => new SolidColorBrush(Colors.Green),
                                 BaseType.Blue => new SolidColorBrush(Colors.Blue),
                                 _ => cell.Fill
+                            };
+                            break;
+                        case DirtTile dirtTile:
+                            cell.Fill = dirtTile.OreType switch
+                            {
+                                null => new SolidColorBrush(Colors.Black),
+                                OreType.Coal => new SolidColorBrush(Colors.DimGray),
+                                OreType.Iron => new SolidColorBrush(Colors.LightGray),
+                                OreType.Copper => new SolidColorBrush(Colors.OrangeRed),
+                                OreType.Gold => new SolidColorBrush(Colors.Gold),
+                                OreType.Uranium => new SolidColorBrush(Colors.GreenYellow),
                             };
                             break;
                     } 
