@@ -52,18 +52,65 @@ namespace MiningGameMapGenerationTest
             {
                 for (var col = 0; col < dynamicGrid.ColumnDefinitions.Count; col++)
                 {
+                    var cellWrapper = new Grid();
                     var cell = new Rectangle
                     {
                         Fill = new SolidColorBrush(Colors.Black),
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Stretch
                     };
+                    cellWrapper.Children.Add(cell);
+                    
                     var tile = mapGenerator.Grid[row][col];
                     
                     switch (tile)
                     {
                         case PathTile pathTile:
-                            cell.Fill = new SolidColorBrush(pathTile.TrackType == null ? Colors.LightSalmon: Colors.Brown);
+                            if (pathTile.TrackType == null)
+                            {
+                                cell.Fill = new SolidColorBrush(Colors.LightSalmon);
+                            }
+                            else
+                            {
+                                cell.Fill = new SolidColorBrush(Colors.Brown);
+                                var trackText = new TextBlock
+                                {
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    Text = pathTile.TrackType switch
+                                    {
+                                        TrackType.Straight => pathTile.TrackDirection == Direction.North ? "|" : "-",
+                                        TrackType.Curved => pathTile.TrackDirection switch
+                                        {
+                                            Direction.North => "┗",
+                                            Direction.East => "┏",
+                                            Direction.South => "┓",
+                                            Direction.West => "┛",
+                                            _ => ""
+                                        },
+                                        TrackType.Switch => pathTile.TrackDirection switch
+                                        {
+                                            Direction.North => "T",
+                                            Direction.East => "⊣",
+                                            Direction.South => "Ʇ",
+                                            Direction.West => "⊢",
+                                            _ => ""
+                                        },
+                                        TrackType.Intersection => "+",
+                                        TrackType.End => pathTile.TrackDirection switch
+                                        {
+                                            Direction.North => "v",
+                                            Direction.East => "<",
+                                            Direction.South => "^",
+                                            Direction.West => ">",
+                                            _ => ""
+                                        },
+                                        _ => ""
+                                    }
+                                };
+                                cellWrapper.Children.Add(trackText);
+                            }
+                            
                             break;
                         case BaseTile baseTile:
                             cell.Fill = baseTile.BaseType switch
@@ -79,9 +126,9 @@ namespace MiningGameMapGenerationTest
                     } 
 
                     // Add the Rectangle to the grid cell
-                    dynamicGrid.Children.Add(cell);
-                    Grid.SetRow(cell, row);
-                    Grid.SetColumn(cell, col);
+                    dynamicGrid.Children.Add(cellWrapper);
+                    Grid.SetRow(cellWrapper, row);
+                    Grid.SetColumn(cellWrapper, col);
                 }
             }
 

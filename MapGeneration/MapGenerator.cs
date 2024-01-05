@@ -119,12 +119,16 @@ public class MapGenerator
         // Create paths
         for (var i = 0; i < random.Next(Height, Height * 2); i++)
         {
+            var selectedPercentage = random.Next(100);
             var diffX = target.X - currentPosition.X;
             var diffY = target.Y - currentPosition.Y;
+            
+            // Find the preferred direction
+            Direction preferredDirection;
+            if (Math.Abs(diffX) > Math.Abs(diffY)) preferredDirection = diffX < 0 ? Direction.West : Direction.East;
+            else preferredDirection = diffY < 0 ? Direction.North : Direction.South;
 
-            var preferredDirection = GetPreferredDirection(diffX, diffY);
-            var selectedPercentage = random.Next(100);
-
+            // Find all the possible next directions
             var possibleDirections = new List<Direction> { Direction.North, Direction.East, Direction.South, Direction.West };
             var canGoNorth = currentPosition.Y > 0;
             var canGoEast = currentPosition.X < Height - 1;
@@ -145,27 +149,27 @@ public class MapGenerator
             };
             possibleDirections.Remove(oppositeDirection);
 
-            if (possibleDirections.Count == 1)
+            switch (possibleDirections.Count)
             {
-                currentDirection = possibleDirections[0];
-            }
-            else if (possibleDirections.Count == 2)
-            {
-                currentDirection = selectedPercentage < 50 ? possibleDirections[0] : possibleDirections[1];
-            }
-            else
-            {
-                if (possibleDirections.Contains(preferredDirection))
-                {
+                case 1:
+                    currentDirection = possibleDirections[0];
+                    break;
+                case 2 when possibleDirections.Contains(preferredDirection):
+                    possibleDirections.Remove(preferredDirection);
+                    currentDirection = selectedPercentage < 80 ? preferredDirection : possibleDirections[0];
+                    break;
+                case 2:
+                    currentDirection = selectedPercentage < 50 ? possibleDirections[0] : possibleDirections[1];
+                    break;
+                case 3 when possibleDirections.Contains(preferredDirection):
                     possibleDirections.Remove(preferredDirection);
                     possibleDirections.Remove(currentDirection);
                     currentDirection = selectedPercentage < 20 ? preferredDirection : selectedPercentage < 90 ? currentDirection : possibleDirections[0];
-                }
-                else
-                {
+                    break;
+                case 3:
                     possibleDirections.Remove(currentDirection);
                     currentDirection = selectedPercentage < 80 ? currentDirection : selectedPercentage < 90 ? possibleDirections[0] : possibleDirections[1];
-                }
+                    break;
             }
 
             // Move position
@@ -205,15 +209,6 @@ public class MapGenerator
         }
     }
 
-    private static Direction GetPreferredDirection(int diffX, int diffY)
-    {
-        if (Math.Abs(diffX) > Math.Abs(diffY))
-        {
-            return diffX < 0 ? Direction.West : Direction.East;
-        }
-        return diffY < 0 ? Direction.North : Direction.South;
-    }
-
     private void FixAllTracks()
     {
         for (var y = 0; y < Height; y++)
@@ -230,7 +225,7 @@ public class MapGenerator
 
                 var directions = new[] { Direction.North, Direction.East, Direction.South, Direction.West };
                 var connections = new List<bool> { trackNorth, trackEast, trackSouth, trackWest };
-                var amountOfConnections = connections.Select(v => v).Count();
+                var amountOfConnections = connections.Count(v => v);
 
                 switch (amountOfConnections)
                 {
